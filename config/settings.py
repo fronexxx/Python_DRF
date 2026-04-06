@@ -36,7 +36,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # my_apps
-
+    'core',
+    'apps.pizza',
 ]
 
 MIDDLEWARE = [
@@ -71,10 +72,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'python_drf',
-        'USER': 'user',
-        'PASSWORD': 'user',
+        'USER': 'root',
+        'PASSWORD': 'rootroot',
         'HOST': 'localhost',
-        'PORT': '3307',
+        'PORT': '3306',
     }
 }
 
