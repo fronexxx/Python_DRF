@@ -5,7 +5,7 @@ from apps.pizzas.models import PizzaModel
 from apps.pizzas.serializer import PizzaSerializer
 
 
-class PizzaListView(ListCreateAPIView):
+class PizzaListView(ListAPIView):
     serializer_class = PizzaSerializer
 
     def get_queryset(self):

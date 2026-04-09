@@ -20,4 +20,5 @@ from django.urls import include, path
 
 urlpatterns = [
     path('pizzas', include('apps.pizzas.urls')),
+    path('pizza_shops', include('apps.pizza_shops.urls'))
 ]
