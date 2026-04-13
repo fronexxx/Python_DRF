@@ -6,4 +6,19 @@ from apps.pizzas.models import PizzaModel
 class PizzaSerializer(serializers.ModelSerializer):
     class Meta:
         model = PizzaModel
-        fields = ('id', 'name', 'size', 'price', 'created_at', 'updated_at')
+        fields = ('id', 'name', 'size', 'price', 'day', 'created_at', 'updated_at')
+
+
+    def validate_price(self, price):
+        if price <= 0:
+            raise serializers.ValidationError('Price must be grater than 0')
+        return price
+
+    def validate(self, attrs):
+        price = attrs.get('price')
+        size = attrs.get('size')
+
+        if price == size:
+            raise serializers.ValidationError('Price can not be equal to size')
+        return attrs
+

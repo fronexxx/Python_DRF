@@ -12,6 +12,7 @@ Django = "^6.0.3"
 djangorestframework = "^3.17.1"
 mysqlclient = "^2.2.8"
 django-dotenv = "^1.4.2"
+django-filter = "^25.2"
 
 [build-system]
 requires = ["poetry-core"]
