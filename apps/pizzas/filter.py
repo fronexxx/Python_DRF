@@ -7,7 +7,7 @@ from rest_framework.exceptions import ValidationError
 
 from django_filters import rest_framework as filters
 
-from apps.pizzas.models import DaysChoices, PizzaModel
+from apps.pizzas.models import DaysChoices
 from apps.pizzas.serializer import PizzaSerializer
 
 # def pizza_filter(query: QueryDict) -> QuerySet:
