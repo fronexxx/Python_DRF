@@ -20,7 +20,7 @@ class DaysChoices(models.TextChoices):
 class PizzaModel(BaseModel):
     class Meta:
         db_table = 'pizzas'
-        ordering = ('-id',)
+        ordering = ('id',)
 
     name = models.CharField(max_length=20, validators=[V.RegexValidator(RegexEnum.NAME.pattern, RegexEnum.NAME.msg)])
     size = models.IntegerField(validators=[V.MinValueValidator(1), V.MaxValueValidator(100)])
