@@ -30,7 +30,6 @@ ALLOWED_HOSTS = []
 AUTH_USER_MODEL = 'user.UserModel'
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -38,6 +37,8 @@ INSTALLED_APPS = [
     'django_filters',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    'django_celery_results',
+    'django_celery_beat',
 
     # my_apps
     'core',
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
     'apps.pizzas_shop',
 
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
