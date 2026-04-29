@@ -1,0 +1,19 @@
+from channels.middleware import BaseMiddleware
+from core.services.jwt_service import JWTService, SocketToken
+
+
+def get_user(token: str|None):
+    try:
+        return JWTService.verify_token(token, SocketToken)
+    except (Exception,):
+        pass
+
+class AuthSocketMiddleware(BaseMiddleware):
+    async def __call__(self, scope, receive, send):
+        token = dict(
+            [item.split('=') for item in scope['query_string'].decode('utf-8').split('&') if item]
+        ).get('token', None)
+
+        scope['user'] = get_user(token=token)
+
+        return await super().__call__(scope, receive, send)
