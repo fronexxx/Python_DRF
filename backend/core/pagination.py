@@ -12,7 +12,6 @@ class PagePagination(PageNumberPagination):
             'total__items': self.page.paginator.count,
             'total__pages': self.page.paginator.num_pages,
             'prev': bool(self.get_previous_link()),
-            'next': bool(self.get_next_link()),
             'data': data
         })
 

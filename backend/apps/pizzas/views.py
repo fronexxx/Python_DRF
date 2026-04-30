@@ -1,5 +1,5 @@
 
-from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView, UpdateAPIView
+from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, UpdateAPIView
 from rest_framework.permissions import AllowAny
 
 from apps.pizzas.filter import PizzaFilter
@@ -7,7 +7,7 @@ from apps.pizzas.models import PizzaModel
 from apps.pizzas.serializer import PizzaPhotoSerializer, PizzaSerializer
 
 
-class PizzaListCreateView(ListAPIView):
+class PizzaListCreateView(ListCreateAPIView):
     serializer_class = PizzaSerializer
     queryset = PizzaModel.objects.all()
     filterset_class = PizzaFilter
