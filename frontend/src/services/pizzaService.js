@@ -7,7 +7,7 @@ const pizzaService = {
     },
 
     create(data) {
-        return apiService.post(urls.pizzas, {pizza_shop_id: 1}, ...data)
+        return apiService.post(urls.pizzas, data)
     },
 };
 
