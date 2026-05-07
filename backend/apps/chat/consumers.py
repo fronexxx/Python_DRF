@@ -1,8 +1,12 @@
+import datetime
+
+from django.db.models.expressions import F
+
 from channels.db import database_sync_to_async
 from djangochannelsrestframework.decorators import action
 from djangochannelsrestframework.generics import GenericAsyncAPIConsumer
 
-from apps.chat.models import ChatRoomModel
+from apps.chat.models import ChatRoomModel, MessageModel
 
 
 class ChatConsumer(GenericAsyncAPIConsumer):
@@ -27,6 +31,14 @@ class ChatConsumer(GenericAsyncAPIConsumer):
             self.channel_name
         )
 
+        messages = await self.get_last_five_messages()
+        for text, name in messages:
+            await self.sender({
+                'message': text,
+                'user': name,
+                'request_id': str(datetime.datetime.now())
+            })
+
         await self.channel_layer.group_send(
             self.room.name,
             {
@@ -41,7 +53,7 @@ class ChatConsumer(GenericAsyncAPIConsumer):
 
     @action()
     async def send_message(self, data, request_id, action):
-        print(action)
+        await MessageModel.objects.acreate(room=self.room, user=self.scope['user'], text=data)
         await self.channel_layer.group_send(
             self.room.name,
             {
@@ -56,3 +68,10 @@ class ChatConsumer(GenericAsyncAPIConsumer):
     def get_profile_name(self):
         user = self.scope['user']
         return user.profile.name
+
+    @database_sync_to_async
+    def get_last_five_messages(self):
+        res = self.room.messages.annotate(name=F('user__profile__name')).values('text', 'name').order_by('-id')[:5]
+        return reversed(([(msg['name'], msg['text']) for msg in res]))
+
+
