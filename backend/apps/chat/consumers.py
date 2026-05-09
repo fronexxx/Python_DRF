@@ -27,12 +27,17 @@ class ChatConsumer(GenericAsyncAPIConsumer):
         self.user_name = await self.get_profile_name()
 
         await self.channel_layer.group_add(
+            f'user_{self.scope['user'].id}',
+            self.channel_name
+        )
+
+        await self.channel_layer.group_add(
             self.room.name,
             self.channel_name
         )
 
         messages = await self.get_last_five_messages()
-        for text, name in messages:
+        for name, text in messages:
             await self.sender({
                 'message': text,
                 'user': name,
@@ -43,7 +48,7 @@ class ChatConsumer(GenericAsyncAPIConsumer):
             self.room.name,
             {
                 'type': 'sender',
-                'message': f'{self.user_name} connected to chat'
+                'message': f'{self.scope['user'].id}_{self.user_name} connected to chat'
             }
         )
 
@@ -59,7 +64,20 @@ class ChatConsumer(GenericAsyncAPIConsumer):
             {
                 'type': 'sender',
                 'message': data,
-                'user': self.user_name,
+                'user': f'{self.scope['user'].id}_{self.user_name}',
+                'id': request_id
+            }
+        )
+
+    @action()
+    async def send_private_message(self, data, request_id, action):
+        await MessageModel.objects.acreate(room=self.room, user=self.scope['user'], text=data)
+        await self.channel_layer.group_send(
+            self.room.name,
+            {
+                'type': 'sender',
+                'message': data,
+                'user': f'{self.scope['user'].id}_{self.user_name}',
                 'id': request_id
             }
         )
@@ -71,7 +89,7 @@ class ChatConsumer(GenericAsyncAPIConsumer):
 
     @database_sync_to_async
     def get_last_five_messages(self):
-        res = self.room.messages.annotate(name=F('user__profile__name')).values('text', 'name').order_by('-id')[:5]
-        return reversed(([(msg['name'], msg['text']) for msg in res]))
+        res = self.room.messages.annotate(name=F('user__profile__name'), pk=F('user__pk')).values('pk', 'text', 'name').order_by('-id')[:5]
+        return reversed(([(f'{msg['pk']}_{msg['name']}', msg['text']) for msg in res]))
 
 

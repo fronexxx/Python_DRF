@@ -5,6 +5,7 @@ const Chat = () => {
     const [room, setRoom] = useState(null);
     const [socketClient, setSocketClient] = useState(null);
     const [messages, setMessages] = useState([]);
+    const [targetUser, setTargetUser] = useState(null);
     const roomInput = useRef();
 
     useEffect(() => {
@@ -23,7 +24,12 @@ const Chat = () => {
 
         client.onmessage = ({data}) => {
             const {message, user} = JSON.parse(data.toString());
-            setMessages(prevState => [...prevState, {message, user}])
+            if (user) {
+                const [userId, username] = user.split('_');
+                setMessages(prevState => [...prevState, {userId, username, message}]);
+            } else {
+                setMessages(prevState => [...prevState, {message, user}]);
+            }
         };
 
         return client
@@ -35,8 +41,8 @@ const Chat = () => {
     const EnterHandler = (e) => {
         if (e.key === 'Enter') {
             socketClient.send(JSON.stringify({
-                data: e.target.value,
-                action: 'send_message',
+                data: !targetUser ? e.target.value : `Private ${e.target.value}`,
+                action: !targetUser ? 'send_message' : 'send_private_message',
                 request_id: new Date().getTime()
             }))
             e.target.value = ''
@@ -51,7 +57,17 @@ const Chat = () => {
             </div>
             :
             <div>
-                {messages.map(msg => <div>{msg.user}: {msg.message}</div>)}
+                {messages.map(msg =>
+                    <div>
+                        <span onClick={() => {
+                            if (!targetUser) {
+                                setTargetUser(msg.userId);
+                            }else {
+                                setTargetUser(null)
+                            }
+                            console.log(targetUser);
+                        }}>{msg.username}</span>: {msg.message}
+                    </div>)}
                 <input type="text" onKeyDown={EnterHandler}/>
             </div>
     );
