@@ -41,7 +41,7 @@ const Chat = () => {
     const EnterHandler = (e) => {
         if (e.key === 'Enter') {
             socketClient.send(JSON.stringify({
-                data: !targetUser ? e.target.value : `Private ${e.target.value}`,
+                data: !targetUser ? {text: e.target.value}: {text: `Private ${e.target.value}`, userId: targetUser},
                 action: !targetUser ? 'send_message' : 'send_private_message',
                 request_id: new Date().getTime()
             }))

@@ -1,6 +1,8 @@
 import datetime
 
+from django.contrib.auth import get_user_model
 from django.db.models.expressions import F
+from django.db.models.query_utils import Q
 
 from channels.db import database_sync_to_async
 from djangochannelsrestframework.decorators import action
@@ -8,6 +10,7 @@ from djangochannelsrestframework.generics import GenericAsyncAPIConsumer
 
 from apps.chat.models import ChatRoomModel, MessageModel
 
+UserModel = get_user_model()
 
 class ChatConsumer(GenericAsyncAPIConsumer):
     def __init__(self, *args, **kwargs):
@@ -58,12 +61,13 @@ class ChatConsumer(GenericAsyncAPIConsumer):
 
     @action()
     async def send_message(self, data, request_id, action):
-        await MessageModel.objects.acreate(room=self.room, user=self.scope['user'], text=data)
+        print(data)
+        await MessageModel.objects.acreate(room=self.room, user=self.scope['user'], text=data['text'])
         await self.channel_layer.group_send(
             self.room.name,
             {
                 'type': 'sender',
-                'message': data,
+                'message': data['text'],
                 'user': f'{self.scope['user'].id}_{self.user_name}',
                 'id': request_id
             }
@@ -71,12 +75,20 @@ class ChatConsumer(GenericAsyncAPIConsumer):
 
     @action()
     async def send_private_message(self, data, request_id, action):
-        await MessageModel.objects.acreate(room=self.room, user=self.scope['user'], text=data)
+        print(data)
+        self.private_room_name = f'user_{data['userId']}'
+        private_room, is_created = await ChatRoomModel.objects.aget_or_create(name=self.private_room_name, is_private=True)
+        await private_room.users.aadd(await UserModel.objects.aget(pk=data['userId']), self.scope['user'])
+        await MessageModel.objects.acreate(room=private_room, user=self.scope['user'], text=data['text'])
+        await self.channel_layer.group_add(
+            self.private_room_name,
+            self.channel_name
+        )
         await self.channel_layer.group_send(
-            self.room.name,
+            self.private_room_name,
             {
                 'type': 'sender',
-                'message': data,
+                'message': data['text'],
                 'user': f'{self.scope['user'].id}_{self.user_name}',
                 'id': request_id
             }
@@ -89,7 +101,12 @@ class ChatConsumer(GenericAsyncAPIConsumer):
 
     @database_sync_to_async
     def get_last_five_messages(self):
-        res = self.room.messages.annotate(name=F('user__profile__name'), pk=F('user__pk')).values('pk', 'text', 'name').order_by('-id')[:5]
+        # res = self.room.messages.annotate(name=F('user__profile__name'), pk=F('user__pk')).values('pk', 'text', 'name').order_by('-id')[:5]
+        res = MessageModel.objects.filter(
+            Q(room=self.room) | (Q(room__is_private=True) & Q(room__users__in=[self.scope['user']]))
+        ).annotate(
+            name=F('user__profile__name'), pk=F('user__pk')
+        ).values('pk', 'text', 'name').order_by('-id')[:5]
         return reversed(([(f'{msg['pk']}_{msg['name']}', msg['text']) for msg in res]))
 
 
