@@ -1,11 +1,24 @@
+from django.utils.decorators import method_decorator
+
 from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, UpdateAPIView
 from rest_framework.permissions import AllowAny
 
+from drf_yasg.utils import swagger_auto_schema
+
 from apps.pizzas.filter import PizzaFilter
 from apps.pizzas.models import PizzaModel
-from apps.pizzas.serializer import PizzaPhotoSerializer, PizzaSerializer
+from apps.pizzas.serializer import PizzaPhotoSerializer, PizzaResponseSerializer, PizzaSerializer
 
 
+@method_decorator(
+    name='get',
+    decorator=swagger_auto_schema(
+        security=[],
+        responses={200: PizzaResponseSerializer()},
+        operation_summary='get all pizzas'
+
+    )
+)
 class PizzaListCreateView(ListCreateAPIView):
     serializer_class = PizzaSerializer
     queryset = PizzaModel.objects.all()

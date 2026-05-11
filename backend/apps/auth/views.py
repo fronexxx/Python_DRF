@@ -26,6 +26,9 @@ class ActivateUserView(GenericAPIView):
 
 
 class RecoveryRequestView(GenericAPIView):
+    def get_serializer(self):
+        return None
+
     permission_classes = (AllowAny,)
 
     def post(self, *args, **kwargs):
@@ -38,6 +41,9 @@ class RecoveryRequestView(GenericAPIView):
 
 
 class RecoveryPasswordView(GenericAPIView):
+    def get_serializer(self):
+        return None
+
     permission_classes = (AllowAny,)
 
     def post(self, *args, **kwargs):
@@ -53,6 +59,9 @@ class RecoveryPasswordView(GenericAPIView):
 
 
 class SocketTokenView(GenericAPIView):
+    def get_serializer(self):
+        return None
+
     permission_classes = (IsAuthenticated,)
 
     def get(self, *args, **kwargs):
