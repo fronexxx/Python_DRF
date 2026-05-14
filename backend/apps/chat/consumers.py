@@ -76,7 +76,8 @@ class ChatConsumer(GenericAsyncAPIConsumer):
 
     @action()
     async def send_private_message(self, data, request_id, action):
-        self.private_room_name = f'user_{data['userId']}'
+        user_ids = sorted([self.scope['user'].id, int(data['userId'])])
+        self.private_room_name = f'user_{user_ids[0]}_{user_ids[1]}'
         private_room, is_created = await ChatRoomModel.objects.aget_or_create(name=self.private_room_name, is_private=True)
         await private_room.users.aadd(await UserModel.objects.aget(pk=data['userId']), self.scope['user'])
 
@@ -88,7 +89,7 @@ class ChatConsumer(GenericAsyncAPIConsumer):
         )
 
         await self.channel_layer.group_send(
-            self.private_room_name,
+            f'user_{data['userId']}',
             {
                 'type': 'sender',
                 'message': data['text'],
@@ -96,6 +97,12 @@ class ChatConsumer(GenericAsyncAPIConsumer):
                 'id': request_id
             }
         )
+
+        await self.sender({
+            'message': data['text'],
+            'user': f'{self.scope['user'].id}_{self.user_name}',
+            'request_id': str(datetime.datetime.now())
+        })
 
     @database_sync_to_async
     def get_profile_name(self):
