@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from apps.pizzas.models import PizzaModel
+from apps.pizzas_shop.models import PizzaShopModel
 
 
 class PizzaSerializer(serializers.ModelSerializer):
@@ -9,7 +10,8 @@ class PizzaSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'size', 'price', 'day', 'created_at', 'updated_at')
 
     def create(self, validated_data):
-        return PizzaModel.objects.create(**validated_data, pizza_shop_id=1)
+        pizza_shop = PizzaShopModel.objects.first()
+        return PizzaModel.objects.create(**validated_data, pizza_shop_id=pizza_shop.id)
 
 
     # def validate_price(self, price):

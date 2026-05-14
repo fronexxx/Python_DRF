@@ -1,7 +1,7 @@
 from django.utils.decorators import method_decorator
 
 from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, UpdateAPIView
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 
 from drf_yasg.utils import swagger_auto_schema
 
@@ -24,7 +24,7 @@ class PizzaListCreateView(ListCreateAPIView):
     serializer_class = PizzaSerializer
     queryset = PizzaModel.objects.all()
     filterset_class = PizzaFilter
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     # permission_classes = (IsAuthenticated, )
 
 
